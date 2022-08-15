@@ -1,3 +1,4 @@
 angular-app/
 apps/
 node_modules/
+.husky/
