@@ -34,8 +34,31 @@ cd $client_dir
 # Turn off analytics
 export NG_CLI_ANALYTICS="false"
 
+# Set default params
+configuration=${configuration:-development}
+
+while [ $# -gt 0 ]; do
+	if [[ $1 == *"--"* ]]; then
+		param="${1/--/}"
+		declare $param="$2"
+	fi
+	shift
+done
+
 npm i -y
-ng build --configuration production
+
+# Set Env Config
+ENV_CONFIGURATION="development" && [[ ! -z "$configuration" ]] && ENV_CONFIGURATION=$configuration
+
+echo
+echo "Build Started"
+echo "Using Env Configuration for $ENV_CONFIGURATION"
+ng build --configuration $ENV_CONFIGURATION
+
+if [ $? -ne 0 ]; then
+				echo "Unable to build project. This could be as result of env_configuration settings"
+				exit 1
+fi
 
 # Remove any existing build file
 if [ -e "$buildFile" ]; then
@@ -45,6 +68,10 @@ if [ -e "$buildFile" ]; then
 fi
 
 # Zip build
-echo "Zipping files..."
+echo
+echo "Zipping build files..."
 cd $app_build_files
 zip -r ../$buildFile *
+
+echo
+echo "Done! Build Successful."
